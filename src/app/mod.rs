@@ -1,8 +1,8 @@
 mod config;
-mod event_processor;
+pub mod events;
 
 use config::AppConfig;
-use event_processor::EventProcessor;
+use events::event_processor::EventProcessor;
 
 use crate::renderer::Renderer;
 
@@ -20,7 +20,7 @@ impl App {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let config = AppConfig::default();
         let event_loop = EventLoop::new()?;
-        let renderer = Renderer::new(&event_loop)?;
+        let renderer = pollster::block_on(Renderer::new(&event_loop))?;
 
         let app = App {
             config,
@@ -46,7 +46,7 @@ impl App {
         self.init();
 
         let _ = self.event_loop.run(move |event, elwt| {
-            EventProcessor::process_event(event, elwt);
+            EventProcessor::process_event(event, elwt, &mut self.renderer);
         });
     }
 

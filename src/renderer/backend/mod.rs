@@ -1,6 +1,12 @@
+use winit::{dpi::LogicalSize, window::Window};
+
 pub mod wgpu;
 
-pub trait Backend {}
+pub trait Backend {
+    fn resize(&mut self, new_size: LogicalSize<u32>);
+
+    fn render(&mut self, window: &Window);
+}
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Color {
