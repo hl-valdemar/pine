@@ -1,14 +1,14 @@
 mod shaders;
 
-use crate::renderer::backend::wgpu::shaders::ShaderModule;
-
 use super::Backend;
+use shaders::ShaderModule;
 
 use bytemuck::{Pod, Zeroable};
 use winit::window::Window;
 
 use std::mem;
 
+#[derive(Debug)]
 /// Holds state for the wgpu backend.
 pub struct Wgpu {
     pub instance: wgpu::Instance,
@@ -21,10 +21,14 @@ pub struct Wgpu {
 impl Backend for Wgpu {
     fn resize(&mut self, new_size: winit::dpi::LogicalSize<u32>) {
         tracing::info!("Resize method called from backend!");
+
         if new_size.width > 0 && new_size.height > 0 {
+            // As the surface is currently recreated on every render pass, it's configured upon
+            // creation in the `render` function.
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
-            // Remember to update the camera when the time for that comes around...
+
+            // When adding a camera, it should be updated here as well.
         }
     }
 
