@@ -19,9 +19,13 @@
   // Set run-in subheadings, starting at level 3.
   show heading: it => {
     if it.level == 1 {
-      pad(top: 0.5em, bottom: 0.25em, it)
+      //pad(top: 0.5em, bottom: 0.25em, it)
+      parbreak()
+      pad(top: 0.25em, bottom: 0.5em, text(16pt, weight: "bold", it.body))
     } else if it.level == 2 {
-      pad(top: 0.25em, bottom: 0.25em, it)
+      //pad(top: 0.25em, bottom: 0.25em, it)
+      parbreak()
+      pad(top: 0.25em, bottom: 0.5em, text(14pt, weight: "bold", it.body))
     } else if it.level > 2 {
       parbreak()
       pad(top: 0.25em, bottom: 0.5em, text(12pt, style: "italic", weight: "regular", it.body + "."))

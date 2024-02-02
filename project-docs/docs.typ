@@ -42,7 +42,7 @@ This includes the application state, the renderer, and the world, wrapping the E
 == Renderer
 
 #figure(
-  caption: [Overview of the renderer.],
+  caption: [Overview of the Renderer.],
   [
   #let c = rgb("00fa")
   #v(0.5em)
@@ -75,3 +75,29 @@ This includes the application state, the renderer, and the world, wrapping the E
 The renderes includes a generic backend.
 This decouples the specific rendering logic from the renderer and enables multiple backends such as OpenGL, Vulkan, WGPU, etc. to be implemented as the underlying backend.
 This should make the renderer a simple interface for the actual rendering. 
+
+=== WGPU
+
+#figure(
+  caption: [Overview of the WGPU.],
+  [
+  #let c = rgb("00fa")
+  #v(0.5em)
+  #fletcher.diagram(
+    node-stroke: c,
+    node-fill: rgb("aafa"),
+    node-outset: 2pt,
+    node((1,2), `WGPU`),
+
+    node((0,1), `Camera`),
+    node((1,1), `Renderables`),
+    node((2,1), `Shaders`),
+
+    edge((1,2), (0,1), "<-"),
+    edge((1,2), (1,1), "<-"),
+    edge((1,2), (2,1), "<-"),
+  )
+  ]
+)
+
+Right now, the WGPU backend implementation is split into a Camera module, a Renderables module (containing the Renderable trait declaration and its implementations), and a Shaders module for handling shaders.

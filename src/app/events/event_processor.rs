@@ -36,7 +36,6 @@ impl EventProcessor {
                 elwt.exit();
             }
             WindowEvent::RedrawRequested => {
-                // Rendering call should go here...
                 renderer.render();
             }
             WindowEvent::Resized(physical_size) => {
@@ -47,7 +46,6 @@ impl EventProcessor {
                 inner_size_writer: _inner_size_writer,
             } => {
                 tracing::info!("Scale factor changed: scale factor = {}", scale_factor);
-                tracing::warn!("Scale factor change not accounted for!");
             }
             WindowEvent::MouseWheel { delta, .. } => {
                 let zoom_change = match delta {

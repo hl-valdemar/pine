@@ -1,6 +1,6 @@
-use winit::{dpi::LogicalSize, window::Window};
-
 pub mod wgpu;
+
+use winit::{dpi::LogicalSize, window::Window};
 
 pub trait Backend {
     fn resize(&mut self, new_size: LogicalSize<u32>);

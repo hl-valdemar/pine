@@ -61,6 +61,7 @@ impl Backend for Wgpu {
             });
 
         // TEMPORARY: CREATE THE RENDERING PIPELINE. //
+        // NB: bind_group_layout has to have the same layout as the renderables describe.
         let bind_group_layout =
             self.device
                 .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
