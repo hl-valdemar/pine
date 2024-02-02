@@ -1,5 +1,5 @@
 use winit::{
-    event::{Event as WinitEvent, WindowEvent},
+    event::{Event as WinitEvent, MouseScrollDelta, WindowEvent},
     event_loop::EventLoopWindowTarget,
     window::WindowId,
 };
@@ -32,6 +32,7 @@ impl EventProcessor {
     ) {
         match event {
             WindowEvent::CloseRequested => {
+                tracing::info!("Close requested: closing...");
                 elwt.exit();
             }
             WindowEvent::RedrawRequested => {
@@ -40,6 +41,20 @@ impl EventProcessor {
             }
             WindowEvent::Resized(physical_size) => {
                 renderer.resize(physical_size);
+            }
+            WindowEvent::ScaleFactorChanged {
+                scale_factor,
+                inner_size_writer: _inner_size_writer,
+            } => {
+                tracing::info!("Scale factor changed: scale factor = {}", scale_factor);
+                tracing::warn!("Scale factor change not accounted for!");
+            }
+            WindowEvent::MouseWheel { delta, .. } => {
+                let zoom_change = match delta {
+                    MouseScrollDelta::LineDelta(_, y) => y * 0.1,
+                    MouseScrollDelta::PixelDelta(pos) => pos.y as f32 * 0.01,
+                };
+                tracing::info!("Mouse wheel scrolled: delta = {}", zoom_change);
             }
             _ => {}
         }

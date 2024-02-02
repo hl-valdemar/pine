@@ -1,14 +1,20 @@
+mod camera;
+mod renderables;
 mod shaders;
 
+use self::{
+    camera::Camera,
+    renderables::{Cube, Renderable},
+};
+
 use super::Backend;
+use bytemuck::{Pod, Zeroable};
 use shaders::ShaderModule;
 
-use bytemuck::{Pod, Zeroable};
 use winit::window::Window;
 
 use std::mem;
 
-#[derive(Debug)]
 /// Holds state for the wgpu backend.
 pub struct Wgpu {
     pub instance: wgpu::Instance,
@@ -16,24 +22,25 @@ pub struct Wgpu {
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
     pub surface_config: wgpu::SurfaceConfiguration,
+    pub renderables: Vec<Box<dyn Renderable>>,
+    pub camera: Camera,
 }
 
 impl Backend for Wgpu {
     fn resize(&mut self, new_size: winit::dpi::LogicalSize<u32>) {
-        tracing::info!("Resize method called from backend!");
+        // tracing::info!("Resize method called from backend!");
 
         if new_size.width > 0 && new_size.height > 0 {
             // As the surface is currently recreated on every render pass, it's configured upon
             // creation in the `render` function.
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
-
-            // When adding a camera, it should be updated here as well.
+            self.camera.aspect_ratio = new_size.width as f32 / new_size.height as f32;
         }
     }
 
     fn render(&mut self, window: &Window) {
-        tracing::info!("Render method called from backend!");
+        // tracing::info!("Render method called from backend!");
 
         // Create the surface and configure it.
         let surface = Self::create_surface(&self.instance, &window);
@@ -89,10 +96,16 @@ impl Backend for Wgpu {
         // used for submission to the command queue.
         {
             // Begin the render pass.
-            let mut render_pass = self.begin_render_pass(&mut encoder, &view);
+            let mut render_pass = Self::begin_render_pass(&mut encoder, &view);
 
-            // Set the pipeline.
+            // Set the pipeline. NB: This assumes that all renderables share a common pipeline.
             render_pass.set_pipeline(&pipeline);
+
+            // Render all the renderables.
+            for renderable in self.renderables.iter_mut() {
+                renderable.setup(&self.device);
+                renderable.render(&self.device, &mut render_pass, &self.camera);
+            }
         }
 
         // Submit the commands to the GPU.
@@ -114,12 +127,20 @@ impl Wgpu {
         let surface_config =
             Self::configure_surface(&adapter, &device, &surface, window.inner_size());
 
+        let cube = Cube::default();
+
+        let camera = Camera::default();
+
+        let renderables: Vec<Box<dyn Renderable>> = vec![Box::new(cube)];
+
         Self {
             instance,
             adapter,
             device,
             queue,
             surface_config,
+            renderables,
+            camera,
         }
     }
 
@@ -217,7 +238,6 @@ impl Wgpu {
 
     /// Begins a render pass from the given command encoder.
     pub fn begin_render_pass<'pass, 'a: 'pass>(
-        &'a self,
         encoder: &'a mut wgpu::CommandEncoder,
         view: &'a wgpu::TextureView,
     ) -> wgpu::RenderPass<'pass> {
@@ -285,7 +305,7 @@ impl Wgpu {
 
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
-struct Vertex {
+pub struct Vertex {
     _pos: [f32; 4],
 }
 
@@ -303,54 +323,8 @@ impl Vertex {
     }
 }
 
-fn vertex(pos: [i8; 3]) -> Vertex {
+pub fn vertex(pos: [i8; 3]) -> Vertex {
     Vertex {
         _pos: [pos[0] as f32, pos[1] as f32, pos[2] as f32, 1.0],
     }
-}
-
-fn create_vertices() -> (Vec<Vertex>, Vec<u16>) {
-    let vertex_data = [
-        // top (0, 0, 1)
-        vertex([-1, -1, 1]),
-        vertex([1, -1, 1]),
-        vertex([1, 1, 1]),
-        vertex([-1, 1, 1]),
-        // bottom (0, 0, -1)
-        vertex([-1, 1, -1]),
-        vertex([1, 1, -1]),
-        vertex([1, -1, -1]),
-        vertex([-1, -1, -1]),
-        // right (1, 0, 0)
-        vertex([1, -1, -1]),
-        vertex([1, 1, -1]),
-        vertex([1, 1, 1]),
-        vertex([1, -1, 1]),
-        // left (-1, 0, 0)
-        vertex([-1, -1, 1]),
-        vertex([-1, 1, 1]),
-        vertex([-1, 1, -1]),
-        vertex([-1, -1, -1]),
-        // front (0, 1, 0)
-        vertex([1, 1, -1]),
-        vertex([-1, 1, -1]),
-        vertex([-1, 1, 1]),
-        vertex([1, 1, 1]),
-        // back (0, -1, 0)
-        vertex([1, -1, 1]),
-        vertex([-1, -1, 1]),
-        vertex([-1, -1, -1]),
-        vertex([1, -1, -1]),
-    ];
-
-    let index_data: &[u16] = &[
-        0, 1, 2, 2, 3, 0, // top
-        4, 5, 6, 6, 7, 4, // bottom
-        8, 9, 10, 10, 11, 8, // right
-        12, 13, 14, 14, 15, 12, // left
-        16, 17, 18, 18, 19, 16, // front
-        20, 21, 22, 22, 23, 20, // back
-    ];
-
-    (vertex_data.to_vec(), index_data.to_vec())
 }
