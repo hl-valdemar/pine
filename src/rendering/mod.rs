@@ -1,52 +1,8 @@
+pub mod color;
+
 use winit::window::Window as WinitWindow;
 
 use crate::{error::PineError, windowing::Window};
-
-#[derive(Debug, Clone, Copy)]
-pub struct Color {
-    r: f64,
-    g: f64,
-    b: f64,
-    a: f64,
-}
-
-impl Color {
-    pub const BLACK: Self = Self {
-        r: 0.0,
-        g: 0.0,
-        b: 0.0,
-        a: 1.0,
-    };
-
-    pub const WHITE: Self = Self {
-        r: 1.0,
-        g: 1.0,
-        b: 1.0,
-        a: 1.0,
-    };
-
-    pub const RED: Self = Self {
-        r: 1.0,
-        g: 0.0,
-        b: 0.0,
-        a: 1.0,
-    };
-
-    pub const GREEN: Self = Self {
-        r: 0.0,
-        g: 1.0,
-        b: 0.0,
-        a: 1.0,
-    };
-
-    pub const BLUE: Self = Self {
-        r: 0.0,
-        g: 0.0,
-        b: 1.0,
-        a: 1.0,
-    };
-}
-
 #[derive(Debug)]
 pub struct FrameData<'surface> {
     pub clear_color: wgpu::Color,
@@ -242,17 +198,6 @@ impl Renderer {
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             // self.camera.aspect_ratio = new_size.width as f32 / new_size.height as f32;
-        }
-    }
-}
-
-impl From<Color> for wgpu::Color {
-    fn from(color: Color) -> Self {
-        wgpu::Color {
-            r: color.r,
-            g: color.g,
-            b: color.b,
-            a: color.a,
         }
     }
 }

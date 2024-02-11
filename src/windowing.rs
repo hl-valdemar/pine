@@ -6,7 +6,7 @@ use winit::{
 
 use crate::{
     error::PineError,
-    rendering::{Color, Renderer},
+    rendering::{color::Color, Renderer},
 };
 
 #[derive(Debug)]
