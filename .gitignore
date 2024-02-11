@@ -1,1 +1,11 @@
 /target
+/_src
+/__src
+/examples/draft.rs
+/examples/ideal.rs
+/examples/shader.wgsl
+/examples/simple.rs
+/*.png
+/*.gif
+/perf.data
+/flamegraph.svg
