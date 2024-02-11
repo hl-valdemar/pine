@@ -1,15 +1,22 @@
 pub mod color;
+pub mod shaders;
+
+use crate::{error::PineError, windowing::Window};
 
 use winit::window::Window as WinitWindow;
 
-use crate::{error::PineError, windowing::Window};
 #[derive(Debug)]
+/// Data relevent for the rendering step.
+///
+/// Produced in the preparation step.
 pub struct FrameData<'surface> {
     pub clear_color: wgpu::Color,
     pub surface: wgpu::Surface<'surface>,
 }
 
 #[derive(Debug)]
+/// A builder for the FrameData that allows for gradually setting the different values of the frame
+/// data.
 pub struct FrameDataBuilder<'surface> {
     pub clear_color: Option<wgpu::Color>,
     pub surface: Option<wgpu::Surface<'surface>>,
@@ -25,16 +32,19 @@ impl<'b> Default for FrameDataBuilder<'b> {
 }
 
 impl<'b> FrameDataBuilder<'b> {
+    /// Sets the surface to render.
     pub fn with_surface(mut self, surface: wgpu::Surface<'b>) -> Self {
         self.surface = Some(surface);
         self
     }
 
+    /// Sets the clear color to render with.
     pub fn with_clear_color(mut self, clear_color: wgpu::Color) -> Self {
         self.clear_color = Some(clear_color);
         self
     }
 
+    /// Constructs the actual FrameData used in the render step.
     pub fn build(self) -> FrameData<'b> {
         FrameData {
             clear_color: self.clear_color.unwrap(),
@@ -44,6 +54,7 @@ impl<'b> FrameDataBuilder<'b> {
 }
 
 #[derive(Debug)]
+/// State useful for rendering.
 pub struct Renderer {
     instance: wgpu::Instance,
     adapter: wgpu::Adapter,
@@ -53,6 +64,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
+    /// Constructs a new Renderer.
     pub async fn new(window: &WinitWindow) -> Result<Self, PineError> {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
@@ -132,11 +144,15 @@ impl Renderer {
         config
     }
 
+    /// Creates a new command encoder.
     pub fn create_encoder(&self) -> wgpu::CommandEncoder {
         self.device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None })
     }
 
+    /// Prepares data for the rendering step.
+    ///
+    /// Returns either the frame data for the rendering step or a PineError.
     pub fn prepare<'window>(
         &self,
         window: &'window Window,
@@ -154,7 +170,8 @@ impl Renderer {
         Ok(data)
     }
 
-    pub fn render<'rpass>(&self, frame_data: &'rpass FrameData) {
+    /// Renders with the given frame data.
+    pub fn render(&self, frame_data: &FrameData) {
         frame_data
             .surface
             .configure(&self.device, &self.surface_config);
@@ -167,7 +184,7 @@ impl Renderer {
         let mut encoder = self.create_encoder();
 
         {
-            let render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &view,
@@ -189,12 +206,9 @@ impl Renderer {
         surface_texture.present();
     }
 
+    /// Sets the new size for the stored Surface config.
     pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
-        // tracing::info!("Resize method called from backend!");
-
         if new_size.width > 0 && new_size.height > 0 {
-            // As the surface is currently recreated on every render pass, it's configured upon
-            // creation in the `render` function.
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             // self.camera.aspect_ratio = new_size.width as f32 / new_size.height as f32;

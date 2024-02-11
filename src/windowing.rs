@@ -1,15 +1,17 @@
+use crate::{
+    error::PineError,
+    rendering::{color::Color, Renderer},
+};
+
 use winit::{
     dpi::LogicalSize,
     event_loop::EventLoopWindowTarget,
     window::{Window as WinitWindow, WindowBuilder},
 };
 
-use crate::{
-    error::PineError,
-    rendering::{color::Color, Renderer},
-};
-
 #[derive(Debug)]
+/// The Window struct holds a handle to the winit Window as well as the Renderer attached to said
+/// window (among other things).
 pub struct Window {
     pub handle: WinitWindow,
     pub renderer: Renderer,
@@ -17,6 +19,7 @@ pub struct Window {
 }
 
 #[derive(Debug, Clone)]
+/// The Window config defines customizable options for building a window.
 pub struct WindowConfig {
     title: String,
     width: Option<u32>,
@@ -38,21 +41,25 @@ impl Default for WindowConfig {
 }
 
 impl WindowConfig {
+    /// Sets the title of the window.
     pub fn with_title(mut self, title: &str) -> Self {
         self.title = title.to_string();
         self
     }
 
+    /// Sets whether the window is resizable.
     pub fn with_resizable(mut self, resizable: bool) -> Self {
         self.resizable = resizable;
         self
     }
 
+    /// Sets the clear color of the window.
     pub fn with_clear_color(mut self, color: Color) -> Self {
         self.clear_color = Some(color);
         self
     }
 
+    /// Constructs an actual Pine window from the config.
     pub fn build(&self, elwt: &EventLoopWindowTarget<()>) -> Result<Window, PineError> {
         let mut builder = WindowBuilder::new()
             .with_title(self.title.as_str())

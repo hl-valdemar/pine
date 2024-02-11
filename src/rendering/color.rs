@@ -1,4 +1,5 @@
 #[derive(Debug, Clone, Copy)]
+/// A custom Color type.
 pub struct Color {
     r: f64,
     g: f64,

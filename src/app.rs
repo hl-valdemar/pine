@@ -1,8 +1,7 @@
 use winit::{
-    event::{Event as WinitEvent, KeyEvent, WindowEvent},
+    event::{Event as WinitEvent, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     keyboard::{Key, NamedKey},
-    platform::run_on_demand::EventLoopExtRunOnDemand,
 };
 
 use crate::{
@@ -10,19 +9,31 @@ use crate::{
     windowing::{Window, WindowConfig},
 };
 
+/// Holds the relevant items for the Pine engine.
 pub struct Pine {
     windows: Vec<Window>,
 }
 
+/// The Pine configuration.
 pub struct PineConfig {
     window_configs: Vec<WindowConfig>,
 }
 
 impl Pine {
+    /// Returns a new Pine config.
+    ///
+    /// Allows for nicer ergonomics.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// Pine::app().with_window(WindowConfig::default()).run();
+    /// ```
     pub fn app() -> PineConfig {
         PineConfig::new()
     }
 
+    /// Constructs a new Pine instance.
     pub fn new(windows: Vec<Window>) -> Self {
         Self { windows }
     }
@@ -101,17 +112,22 @@ impl Pine {
 }
 
 impl PineConfig {
+    /// Constructs a new Pine config.
     pub fn new() -> Self {
         PineConfig {
             window_configs: vec![],
         }
     }
 
+    /// Appends a window to the config.
+    ///
+    /// NB: windows will be built at the same time as the Pine instance.
     pub fn with_window(&mut self, config: WindowConfig) -> &mut Self {
         self.window_configs.push(config);
         self
     }
 
+    /// Constructs a Pine instance from the config.
     pub fn build(&mut self, event_loop: &EventLoop<()>) -> Pine {
         let windows = self
             .window_configs
@@ -122,6 +138,7 @@ impl PineConfig {
         Pine::new(windows)
     }
 
+    /// Shortcut to spin up Pine from config.
     pub fn run(&mut self) {
         let event_loop = EventLoop::new().expect("Failed to initialize event loop");
         self.build(&event_loop).run(event_loop);

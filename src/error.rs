@@ -1,4 +1,5 @@
 #[derive(Debug)]
+/// Defines possible errors in Pine.
 pub enum PineError {
     // Window and event loop
     EventLoopError(winit::error::EventLoopError),
