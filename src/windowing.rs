@@ -1,6 +1,6 @@
 use crate::{
     error::PineError,
-    rendering::{color::Color, Renderer},
+    rendering::{color::Color, Renderer, Renderer2D},
 };
 
 use winit::{
@@ -14,7 +14,7 @@ use winit::{
 /// window (among other things).
 pub struct Window {
     pub handle: WinitWindow,
-    pub renderer: Renderer,
+    pub renderer: Box<dyn Renderer>,
     pub clear_color: Color,
 }
 
@@ -79,8 +79,9 @@ impl WindowConfig {
             tracing::error!("Failed to build window");
             return PineError::OsError(err);
         })?;
-        let renderer =
-            pollster::block_on(Renderer::new(&handle)).expect("Failed to construct renderer");
+        let renderer = Box::new(
+            pollster::block_on(Renderer2D::new(&handle)).expect("Failed to construct renderer"),
+        );
 
         let window = Window {
             handle,
